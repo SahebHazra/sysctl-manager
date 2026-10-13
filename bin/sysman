@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# bin/sysman - Main entry point for Systemctl Manager
+
+# Get the absolute path of the project root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Source modular libraries
+source "$PROJECT_ROOT/lib/config.sh"
+source "$PROJECT_ROOT/lib/services.sh"
+
+# Dependency check
+if ! command -v systemctl &> /dev/null; then
+    echo "❌ Error: 'systemctl' not found. This tool requires a systemd-based Linux system."
+    exit 1
+fi
+
+# Initialize application state
+init_config
+
+# -------- Main Menu Loop --------
+main_menu() {
+    while true; do
+        clear
+        echo "======================================="
+        echo "       🧭 Service Manager (sysman)     "
+        echo "======================================="
+        echo " "
+        echo " 1) Active Services [to stop]          "
+        echo " 2) Services stopped by this script    "
+        echo " 3) Show Inactive/Other Services       "
+        echo " 909) Exit                             "
+        echo " "
+        read -rp "Select an option: " opt
+
+        case "$opt" in
+            1) run_option1 ;;
+            2) run_option2 ;;
+            3) run_option3 ;;
+            909) echo "Goodbye!"; exit 0 ;;
+            *) echo "Try again."; sleep 1 ;;
+        esac
+    done
+}
+
+# Run the application
+main_menu
