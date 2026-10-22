@@ -60,7 +60,7 @@ Before installing Sysman, ensure your system has:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/saheb_hazra/sysctl-manager.git
+git clone https://github.com/SahebHazra/sysctl-manager.git
 cd sysctl-manager
 ```
 
