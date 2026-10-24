@@ -1,22 +1,31 @@
 #!/usr/bin/env bash
-# bin/sysman - Main entry point for Systemctl Manager
+# bin/sysman - Main entry point for Sysman
 
-# Get the absolute path of the project root directory
+# Get the absolute path of the project root directory.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Source modular libraries
-source "$PROJECT_ROOT/lib/config.sh"
-source "$PROJECT_ROOT/lib/services.sh"
-
-# Dependency check
-if ! command -v systemctl &> /dev/null; then
-    echo "❌ Error: 'systemctl' not found. This tool requires a systemd-based Linux system."
+# This application requires Bash 4 or later.
+if (( BASH_VERSINFO[0] < 4 )); then
+    printf "Error: Sysman requires Bash 4 or later. Current version: %s\n" "$BASH_VERSION" >&2
     exit 1
 fi
 
-# Initialize application state
-init_config
+# Source modular libraries.
+source "$PROJECT_ROOT/lib/config.sh"
+source "$PROJECT_ROOT/lib/services.sh"
+
+# Dependency check.
+if ! command -v systemctl >/dev/null 2>&1; then
+    echo "Error: 'systemctl' not found. Sysman requires a systemd-based Linux system." >&2
+    exit 1
+fi
+
+# Initialize application state.
+if ! init_config; then
+    echo "Error: Could not initialize the service history file: $RECORD_FILE" >&2
+    exit 1
+fi
 
 # -------- Main Menu Loop --------
 main_menu() {
@@ -25,12 +34,12 @@ main_menu() {
         echo "======================================="
         echo "       🧭 Service Manager (sysman)     "
         echo "======================================="
-        echo " "
+        echo
         echo " 1) Active Services [to stop]          "
         echo " 2) Services stopped by this script    "
         echo " 3) Show Inactive/Other Services       "
         echo " 909) Exit                             "
-        echo " "
+        echo
         read -rp "Select an option: " opt
 
         case "$opt" in
@@ -43,5 +52,4 @@ main_menu() {
     done
 }
 
-# Run the application
 main_menu
