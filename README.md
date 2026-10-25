@@ -1,156 +1,86 @@
 # 🧭 Sysman — Systemd Service Manager
 
-[![Bash](https://img.shields.io/badge/Language-Bash-4EAA25?style=flat&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
-[![Linux](https://img.shields.io/badge/Platform-Linux-FCC624?style=flat&logo=linux&logoColor=black)](https://www.kernel.org/)
+[![Language: Bash](https://img.shields.io/badge/Language-Bash-4EAA25?style=flat&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-FCC624?style=flat&logo=linux&logoColor=black)](https://www.kernel.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](LICENSE)
 
-**Sysman** is a lightweight, modular, and interactive command-line utility for managing `systemd` services on Linux. Built with Bash, it provides a straightforward terminal interface for inspecting service states, starting and stopping services, and tracking changes made through the tool.
+**Sysman** is a lightweight, interactive command-line utility for inspecting and managing `systemd` services on Linux. It can list service states, stop and start services, and keep a local history of services stopped through the tool.
 
-Designed for Linux enthusiasts, system administrators, and DevOps learners, Sysman simplifies common service-management tasks without the overhead of a graphical interface.
+## Features
 
-## 📑 Table of Contents
+- **Active services:** Browse active and activating services and select one to stop.
+- **Action history:** Track services stopped through Sysman and restart them from the history list.
+- **Non-active services:** Browse loaded services grouped by failed, inactive/dead, and other non-active states.
+- **Quick selection:** Use numbered entries or category codes such as `a1` and `d2`.
+- **Modular Bash code:** Keep the executable, configuration, and service operations in separate files.
+- **Lightweight:** Uses Bash and standard Linux command-line utilities; no graphical interface required.
 
-- [✨ Features](#-features)
-- [📂 Project Structure](#-project-structure)
-- [⚙️ Requirements](#️-requirements)
-- [🚀 Installation](#-installation)
-- [💻 Usage](#-usage)
-- [🔍 How It Works](#-how-it-works)
-- [🤝 Contributing](#-contributing)
-- [📜 License](#-license)
-
-## ✨ Features
-
-- **🟢 Active Services** — Inspect running and activating services and selectively stop services when needed.
-- **📜 Action History** — Track services stopped through Sysman and review the recorded history.
-- **🔄 Service Recovery** — Quickly identify previously stopped services and restart them when required.
-- **📋 Inactive Service Management** — Browse inactive, failed, dead, static, and masked service states through categorized views.
-- **🔢 Quick Selection** — Use intuitive alphanumeric identifiers, such as `a1` or `d3`, to select services from interactive lists.
-- **🛡️ Environment Validation** — Check for the required Bash version and a compatible `systemd` environment before execution.
-- **🧩 Modular Architecture** — Keep the entry point, configuration, and service-management logic separated for easier maintenance.
-- **⚡ Lightweight & Terminal-Based** — Runs with Bash and standard Linux system utilities, without requiring a graphical interface.
-
-## 📂 Project Structure
-
-Sysman uses a modular directory layout to separate application entry-point logic, configuration, and service-management functionality.
+## Project structure
 
 ```text
 sysctl-manager/
 ├── bin/
-│   └── sysman          # Main executable and interactive menu
+│   └── sysman
 ├── lib/
-│   ├── config.sh       # Configuration and state initialization
-│   └── services.sh     # Service discovery and management logic
-├── .gitignore
+│   ├── config.sh
+│   └── services.sh
 ├── LICENSE
 └── README.md
 ```
 
-## ⚙️ Requirements
+## Requirements
 
-Before installing Sysman, ensure your system has:
+- Linux with `systemd`
+- Bash 4.0 or later
+- `systemctl`, `awk`, `grep`, `mktemp`, and standard shell utilities
+- `sudo` privileges for whichever service actions require them
 
-- **Operating system:** Linux distribution using `systemd`, such as Ubuntu, Debian, Fedora, Arch Linux, or RHEL.
-- **Bash:** Version 4.0 or later.
-- **systemd:** Required for service discovery and management.
-- **Privileges:** Appropriate permissions to start or stop system-level services. `sudo` may be required, depending on the service and system configuration.
-
-## 🚀 Installation
-
-### 1. Clone the repository
+## Installation
 
 ```bash
 git clone https://github.com/SahebHazra/sysctl-manager.git
 cd sysctl-manager
-```
-
-### 2. Make the executable runnable
-
-```bash
 chmod +x bin/sysman
-```
-
-### 3. Launch Sysman
-
-```bash
 ./bin/sysman
 ```
 
-Follow the interactive menu to inspect and manage services.
+Run Sysman as your normal user and allow `sudo` only for individual service operations when needed. Stopping or starting system services can affect your system; avoid changing services unless you understand their purpose.
 
-> **Note:** Run Sysman with the permissions required for the operations you intend to perform. Avoid running the entire application as root unless necessary.
+## Usage
 
-## 💻 Usage
+Choose an option from the menu:
 
-Start the application from the cloned repository:
+1. **Active Services:** view active/activating services and stop a selected service.
+2. **Services stopped by this script:** inspect the local history and restart a selected service.
+3. **Inactive/Other Services:** view non-active loaded services and start a selected service.
+4. **909:** exit.
 
-```bash
-./bin/sysman
-```
-
-Use the interactive interface to browse available service categories, select services using their displayed identifiers, and perform the supported actions.
-
-Sysman also records services stopped through the tool, making it easier to review previous actions and identify services you may want to restart.
-
-## 🔍 How It Works
-
-### State Tracking
-
-Sysman maintains a local record of services stopped through the application:
+The history is stored at:
 
 ```text
 ~/.stopped_by_script.txt
 ```
 
-This record helps you identify services affected by previous operations. It is a tracking mechanism, not a replacement for `systemd`'s actual service state.
+This is only Sysman's own action history, not a complete record of all service changes on the system. Starting a service from the history removes it from the history after the start command succeeds.
 
-### Dynamic Path Resolution
+## Development checks
 
-The main executable resolves its own location dynamically, allowing it to locate and source the required library files without relying on the current working directory.
+Run syntax checks from the repository root:
 
-### Modular Design
+```bash
+bash -n bin/sysman lib/config.sh lib/services.sh
+```
 
-The codebase separates responsibilities across three main components:
+If ShellCheck is installed, also run:
 
-- **`bin/sysman`** — Application entry point and interactive menu.
-- **`lib/config.sh`** — Configuration variables and state initialization.
-- **`lib/services.sh`** — Service discovery, state handling, and management operations.
+```bash
+shellcheck bin/sysman lib/config.sh lib/services.sh
+```
 
-This structure makes the project easier to understand, maintain, and extend.
+## Contributing
 
-## 🤝 Contributing
+Bug reports, suggestions, and pull requests are welcome. Please run the checks above before submitting a change.
 
-Contributions, bug reports, suggestions, and feature requests are welcome!
-
-To contribute:
-
-1. Fork this repository.
-2. Create a feature branch:
-
-   ```bash
-   git checkout -b feature/your-feature
-   ```
-
-3. Implement and test your changes.
-4. Commit your work:
-
-   ```bash
-   git add .
-   git commit -m "feat: describe your change"
-   ```
-
-5. Push your branch:
-
-   ```bash
-   git push origin feature/your-feature
-   ```
-
-6. Open a pull request describing your changes.
-
-For larger changes, consider opening an issue first to discuss the proposed implementation.
-
-## 📜 License
+## License
 
 Sysman is distributed under the [MIT License](LICENSE).
-
-You are free to use, modify, and distribute this software in accordance with the terms of the license.

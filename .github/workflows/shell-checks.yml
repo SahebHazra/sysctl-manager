@@ -1,0 +1,20 @@
+name: Shell checks
+
+on:
+  push:
+    branches: ["master", "fix/**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  shell-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check Bash syntax
+        run: bash -n bin/sysman lib/config.sh lib/services.sh tests/test_history.sh
+
+      - name: Test history helpers
+        run: bash tests/test_history.sh
