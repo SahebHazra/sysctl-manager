@@ -3,7 +3,13 @@
 
 # Get the absolute path of the project root directory.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+if [[ -f "$SCRIPT_DIR/../lib/config.sh" && -f "$SCRIPT_DIR/../lib/services.sh" ]]; then
+    # Running from a cloned repository.
+    PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+else
+    # Installed by the Makefile.
+    PROJECT_ROOT="/usr/local/lib/sysman"
+fi
 
 # This application requires Bash 4 or later.
 if (( BASH_VERSINFO[0] < 4 )); then
