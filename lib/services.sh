@@ -10,6 +10,20 @@ record_stopped_service() {
     printf '%s\n' "$svc_name" >> "$RECORD_FILE"
 }
 
+confirm_service_action() {
+    local action="$1"
+    local svc_name="$2"
+    local answer
+
+    read -rp "Confirm $action for $svc_name? [Y/n]: " answer
+    if [[ -z "$answer" || "$answer" == "y" || "$answer" == "Y" ]]; then
+        return 0
+    fi
+
+    echo "Cancelled: $action for $svc_name."
+    return 1
+}
+
 remove_stopped_service() {
     local svc_name="$1"
     local tmp_file
@@ -67,18 +81,20 @@ run_option1() {
 
         if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#all_services[@]})); then
             svc_name="${all_services[$((choice - 1))]}"
-            echo "Stopping $svc_name ..."
+            if confirm_service_action "stop" "$svc_name"; then
+                echo "Stopping $svc_name ..."
 
-            if sudo systemctl stop "$svc_name"; then
-                if systemctl is-active --quiet "$svc_name"; then
-                    echo "Warning: $svc_name is still active; history was not changed."
-                elif record_stopped_service "$svc_name"; then
-                    echo "$svc_name stopped and recorded in history."
+                if sudo systemctl stop "$svc_name"; then
+                    if systemctl is-active --quiet "$svc_name"; then
+                        echo "Warning: $svc_name is still active; history was not changed."
+                    elif record_stopped_service "$svc_name"; then
+                        echo "$svc_name stopped and recorded in history."
+                    else
+                        echo "Warning: $svc_name stopped, but history could not be saved."
+                    fi
                 else
-                    echo "Warning: $svc_name stopped, but history could not be saved."
+                    echo "Failed to stop $svc_name; history was not changed."
                 fi
-            else
-                echo "Failed to stop $svc_name; history was not changed."
             fi
         else
             echo "Invalid selection. Enter a listed number or press Enter to skip."
@@ -122,18 +138,20 @@ run_option2() {
 
     if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#stopped_by_script[@]})); then
         svc_name="${stopped_by_script[$((choice - 1))]}"
-        echo "Starting $svc_name ..."
+        if confirm_service_action "start" "$svc_name"; then
+            echo "Starting $svc_name ..."
 
-        if sudo systemctl start "$svc_name"; then
-            echo "Start command succeeded for $svc_name."
-            # A successful start may return a one-shot service to inactive state.
-            if remove_stopped_service "$svc_name"; then
-                echo "History updated."
+            if sudo systemctl start "$svc_name"; then
+                echo "Start command succeeded for $svc_name."
+                # A successful start may return a one-shot service to inactive state.
+                if remove_stopped_service "$svc_name"; then
+                    echo "History updated."
+                else
+                    echo "Warning: Service start succeeded, but history could not be updated."
+                fi
             else
-                echo "Warning: Service start succeeded, but history could not be updated."
+                echo "Failed to start $svc_name; history was preserved."
             fi
-        else
-            echo "Failed to start $svc_name; history was preserved."
         fi
     else
         echo "Invalid selection. Enter a listed number or press Enter to skip."
@@ -231,12 +249,14 @@ run_option3() {
 
         if ((num >= 1 && num <= ${#arr[@]})); then
             svc_name="${arr[$((num - 1))]%% *}"
-            echo "Starting $svc_name ..."
+            if confirm_service_action "start" "$svc_name"; then
+                echo "Starting $svc_name ..."
 
-            if sudo systemctl start "$svc_name"; then
-                echo "Start command succeeded for $svc_name."
-            else
-                echo "Failed to start $svc_name."
+                if sudo systemctl start "$svc_name"; then
+                    echo "Start command succeeded for $svc_name."
+                else
+                    echo "Failed to start $svc_name."
+                fi
             fi
         else
             echo "Invalid service number for that category."

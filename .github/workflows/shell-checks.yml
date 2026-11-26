@@ -2,7 +2,7 @@ name: Shell checks
 
 on:
   push:
-    branches: ["master", "fix/**"]
+    branches: ["master", "feature/**", "fix/**"]
   pull_request:
   workflow_dispatch:
 
@@ -14,7 +14,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check Bash syntax
-        run: bash -n bin/sysman lib/config.sh lib/services.sh tests/test_history.sh
+        run: bash -n bin/sysman lib/config.sh lib/services.sh tests/test_history.sh tests/test_confirmation.sh
 
       - name: Test history helpers
         run: bash tests/test_history.sh
+
+      - name: Test confirmation prompts
+        run: bash tests/test_confirmation.sh
+
+      - name: Check Makefile syntax
+        run: make -n install uninstall

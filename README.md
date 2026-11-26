@@ -12,6 +12,8 @@
 - **Action history:** Track services stopped through Sysman and restart them from the history list.
 - **Non-active services:** Browse loaded services grouped by failed, inactive/dead, and other non-active states.
 - **Quick selection:** Use numbered entries or category codes such as `a1` and `d2`.
+- **Action confirmation:** Confirm service starts/stops with `y`, `Y`, or Enter; any other response cancels.
+- **System-wide install:** Use `make install` to install the `sysman` command under `/usr/local/bin`, or `make uninstall` to remove it.
 - **Modular Bash code:** Keep the executable, configuration, and service operations in separate files.
 - **Lightweight:** Uses Bash and standard Linux command-line utilities; no graphical interface required.
 
@@ -44,7 +46,29 @@ chmod +x bin/sysman
 ./bin/sysman
 ```
 
-Run Sysman as your normal user and allow `sudo` only for individual service operations when needed. Stopping or starting system services can affect your system; avoid changing services unless you understand their purpose.
+Run Sysman as your normal user and allow `sudo` only for individual service operations when needed. Before each service start or stop, Sysman asks for confirmation: press Enter, `y`, or `Y` to proceed; any other response cancels the action. Stopping or starting system services can affect your system; avoid changing services unless you understand their purpose.
+
+## Install and uninstall
+
+Install the command and its support libraries under `/usr/local`:
+
+```bash
+sudo make install
+```
+
+After installation, run Sysman from any directory:
+
+```bash
+sysman
+```
+
+Remove the installed command and support libraries with:
+
+```bash
+sudo make uninstall
+```
+
+You can still run directly from the cloned repository with `./bin/sysman`.
 
 ## Usage
 
